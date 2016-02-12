@@ -1,0 +1,5 @@
+---
+# CIAO Discharge Summary via Spine cloud deployment
+#
+- include: ciao-base.yml
+- include: ciao-app-dss.yml

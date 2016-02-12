@@ -1,0 +1,28 @@
+input {
+  udp {
+    port => 5000
+    type => syslog
+  }
+}
+# Process the log entries to extract the properties, including splitting up the key value pairs
+filter {
+    multiline {
+        pattern => "^(?!20)"
+        what => "previous"
+    }
+    grok {
+        match => { "message" => "^%{TIMESTAMP_ISO8601:timestamp} (?:-|%{LOGLEVEL:loglevel}) %{DATA:classname}\- Camel \{RouteId:%{DATA:routeid}\sExchangeId:%{DATA:exchangeid}\sMessageId:%{DATA:messageid}\sCorrelationId:%{DATA:correlationid}} - %{GREEDYDATA:message}Values -->\s%{GREEDYDATA:keyvaluepairs}"}
+    }
+    kv {
+        source => "keyvaluepairs"
+        remove_field => [ "keyvaluepairs" ]
+    }
+}
+# Output to elasticsearch on localhost
+output {
+    elasticsearch {
+        protocol => "http"
+        host => "localhost"
+    }
+}
+
